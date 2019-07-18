@@ -117,6 +117,7 @@ func CreateFunctions(
 ) ([]core.Runner, error) {
 	var runners []core.Runner
 
+	fmt.Println(len(configs), enabledFunctions)
 	for _, cfg := range configs {
 		c := config.DefaultFunctionConfig
 		err := cfg.Unpack(&c)
