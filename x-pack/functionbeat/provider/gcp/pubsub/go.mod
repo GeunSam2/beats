@@ -8,7 +8,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/elastic/beats v0.0.0-20190813120752-b93059c6ab9294c4f3721c52773bbb957838e0c3
+	github.com/elastic/beats v0.0.0-20190813140352-38f80ad5d87c7b2da38f9db09503db1e5d76d25b
 	github.com/elastic/ecs v1.0.1 // indirect
 	github.com/elastic/go-lumber v0.1.0 // indirect
 	github.com/elastic/go-seccomp-bpf v1.1.0 // indirect
