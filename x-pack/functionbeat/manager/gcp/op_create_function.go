@@ -13,7 +13,7 @@ import (
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/x-pack/functionbeat/function/executor"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/executor"
 )
 
 type opCreateFunction struct {

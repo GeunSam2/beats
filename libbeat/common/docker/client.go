@@ -23,7 +23,6 @@ import (
 
 	"github.com/docker/docker/api"
 	"github.com/docker/docker/client"
-	"golang.org/x/net/context"
 
 	"github.com/elastic/beats/libbeat/logp"
 )
@@ -43,7 +42,8 @@ func NewClient(host string, httpClient *http.Client, httpHeaders map[string]stri
 
 	if os.Getenv("DOCKER_API_VERSION") == "" {
 		logp.Debug("docker", "Negotiating client version")
-		c.NegotiateAPIVersion(context.Background())
+		// TODO vendor correct version of Docker
+		//c.NegotiateAPIVersion(context.Background())
 	}
 
 	logp.Debug("docker", "Client version set to %s", c.ClientVersion())

@@ -6,15 +6,16 @@ package gcp
 
 import (
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/x-pack/functionbeat/function/executor"
+	"github.com/elastic/beats/x-pack/functionbeat/config"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/executor"
 )
 
 type opDeleteFunction struct {
 	log    *logp.Logger
-	config *Config
+	config *config.Config
 }
 
-func newOpDeleteFunction(log *logp.Logger, config *Config) *opDeleteFunction {
+func newOpDeleteFunction(log *logp.Logger, config *config.Config) *opDeleteFunction {
 	return &opDeleteFunction{log: log, config: config}
 }
 

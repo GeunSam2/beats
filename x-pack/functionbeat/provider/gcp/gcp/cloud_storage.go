@@ -9,6 +9,8 @@ import (
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
 )
 
+// TODO implement and add
+
 func NewCloudStorage(provider provider.Provider, config *common.Config) (provider.Function, error) {
 	return nil, nil
 }

@@ -2,27 +2,21 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
-package include
+package gcp
 
 import (
-	"fmt"
-
 	"github.com/elastic/beats/libbeat/feature"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
 	"github.com/elastic/beats/x-pack/functionbeat/provider/gcp/gcp"
 )
 
-// Bundle exposes the trigger supported by the GCP provider.
-var bundle = provider.MustCreate(
+// Bundle exposes the trigger supported by the gcp provider.
+// TODO add cloud storage
+var Bundle = provider.MustCreate(
 	"gcp",
-	provider.NewDefaultProvider("gcp", provider.NewNullCli, provider.NewNullTemplateBuilder),
-	feature.NewDetails("Google Cloud Platform", "listen to events from Google Cloud Platform", feature.Stable),
+	provider.NewDefaultProvider("gcp", NewCLI, NewTemplateBuilder),
+	feature.NewDetails("Google Cloud Functions", "listen to events on Google Cloud", feature.Stable),
 ).MustAddFunction("pubsub",
 	gcp.NewPubSub,
 	gcp.PubSubDetails(),
 ).Bundle()
-
-func init() {
-	fmt.Println("registered")
-	feature.MustRegisterBundle(bundle)
-}

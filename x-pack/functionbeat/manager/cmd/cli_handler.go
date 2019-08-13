@@ -41,6 +41,7 @@ type cliHandler struct {
 }
 
 func newCLIHandler(clis map[string]provider.CLIManager, functionsByProvider map[string]string, errOutput io.Writer, output io.Writer) *cliHandler {
+	fmt.Println(functionsByProvider)
 	return &cliHandler{
 		clis:                clis,
 		errOutput:           errOutput,
@@ -57,6 +58,7 @@ func (c *cliHandler) Deploy(names []string) error {
 	if len(names) == 0 {
 		return errNoFunctionGiven
 	}
+	fmt.Println(names)
 
 	errCount := c.iterateCLIFunc(names, "deploy", provider.CLIManager.Deploy)
 
@@ -122,7 +124,7 @@ func (c *cliHandler) iterateCLIFunc(names []string, operation string, f func(pro
 	for _, name := range names {
 		providerName, ok := c.functionsByProvider[name]
 		if !ok {
-			fmt.Fprintf(c.errOutput, "Function: %s, could not be %s. Enable it.", name, operation)
+			fmt.Fprintf(c.errOutput, "Function: %s, could not be %s. Enable it.\n", name, operation)
 			errCount++
 			continue
 		}

@@ -17,7 +17,7 @@ type Config struct {
 	FunctionStorage string `config:"storage_url, validate:"required"`
 }
 
-// functionConfig stores the configuration of a Cloud Function
+// functionConfig stores the configuration of a Google Cloud Function
 type functionConfig struct {
 	Description         string                 `config:"description"`
 	MemorySize          config.MemSizeFactor64 `config:"memory_size"`
@@ -29,6 +29,6 @@ type functionConfig struct {
 	Trigger             struct {
 		EventType string `config:"event_type" validate:"required"`
 		Resource  string `config:"resource" validate:"required"`
-		Service   string `config:"service" validate:"required"`
+		Service   string `config:"service"`
 	} `config:"trigger" validate:"required"`
 }

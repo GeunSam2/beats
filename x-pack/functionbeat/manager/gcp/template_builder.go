@@ -9,7 +9,6 @@ import (
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/x-pack/functionbeat/function/core"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
 )
 
@@ -30,8 +29,8 @@ func NewTemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.Provide
 // the command deploy.
 type restAPITemplateBuilder struct {
 	log            *logp.Logger
-	gcpConfig      Config
-	functionConfig functionConfig
+	gcpConfig      *Config
+	functionConfig *functionConfig
 }
 
 type functionData struct {
@@ -44,19 +43,21 @@ func newRestAPITemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.
 	return &restAPITemplateBuilder{log: log}, nil
 }
 
+// TODO
 func (r *restAPITemplateBuilder) execute(name string) (*functionData, error) {
 	r.log.Debug("Compressing all assets into an artifact")
-	raw, err := core.MakeZip("gcp")
-	if err != nil {
-		return nil, err
-	}
+	return nil, nil
+	//raw, err := core.MakeZip("gcp")
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	r.log.Debugf("Compression is successful (zip size: %d bytes)", len(raw))
+	//r.log.Debugf("Compression is successful (zip size: %d bytes)", len(raw))
 
-	return &functionData{
-		raw:         raw,
-		requestBody: r.requestBody(name),
-	}, nil
+	//return &functionData{
+	//	raw:         raw,
+	//	requestBody: r.requestBody(name),
+	//}, nil
 }
 
 func (r *restAPITemplateBuilder) requestBody(name string) common.MapStr {

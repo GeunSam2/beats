@@ -11,6 +11,7 @@ import (
 	"cloud.google.com/go/pubsub"
 
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/feature"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/function/core"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
@@ -19,22 +20,16 @@ import (
 
 // PubSub represents a Google Cloud function which reads event from Google Pub/Sub triggers.
 type PubSub struct {
-	config *functionConfig
-	log    *logp.Logger
+	log *logp.Logger
 }
 
 type PubSubMsg string
 type PubSubContext string
 
 // NewPubSub returns a new function to read from Google Pub/Sub.
-func NewPubSub(provider provider.Provider, config *common.Config) (provider.Function, error) {
-	functionConfig := &functionConfig{}
-	if err := config.Unpack(functionConfig); err != nil {
-		return nil, err
-	}
+func NewPubSub(provider provider.Provider, _ *common.Config) (provider.Function, error) {
 	return &PubSub{
-		config: functionConfig,
-		log:    logp.NewLogger("pubsub"),
+		log: logp.NewLogger("pubsub"),
 	}, nil
 }
 
@@ -77,6 +72,11 @@ func (c *PubSub) getEventDataFromContext(ctx context.Context) (context.Context, 
 		return nil, pubsub.Message{}, fmt.Errorf("not message: %+v", iMsg)
 	}
 	return msgCtx, msg, nil
+}
+
+// PubSubDetails returns the details of the feature.
+func PubSubDetails() *feature.Details {
+	return feature.NewDetails("Google Pub/Sub trigger", "receive messages from Google Pub/Sub.", feature.Stable)
 }
 
 // Name returns the name of the function.

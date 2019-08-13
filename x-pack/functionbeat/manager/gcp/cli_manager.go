@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/x-pack/functionbeat/function/executor"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/executor"
 )
 
 const (
@@ -26,7 +26,6 @@ type CLIManager struct {
 	templateBuilder *restAPITemplateBuilder
 	log             *logp.Logger
 	config          *Config
-	functionConfig  *functionConfig
 
 	location string
 }
@@ -80,9 +79,8 @@ func (c *CLIManager) deploy(update bool, name string) error {
 
 	// TODO wait
 
-	ctx := newContext()
-	if err := executer.Execute(ctx); err != nil {
-		if rollbackErr := executer.Rollback(ctx); rollbackErr != nil {
+	if err := executer.Execute(nil); err != nil {
+		if rollbackErr := executer.Rollback(nil); rollbackErr != nil {
 			return errors.Wrapf(err, "could not rollback, error: %s", rollbackErr)
 		}
 		return err
@@ -126,7 +124,6 @@ func NewCLI(
 
 	return &CLIManager{
 		config:          config,
-		functionConfig:  functionConfig,
 		log:             logp.NewLogger("gcp"),
 		templateBuilder: templateBuilder,
 		location:        location,
