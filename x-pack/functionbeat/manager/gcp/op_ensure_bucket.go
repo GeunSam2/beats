@@ -25,7 +25,7 @@ func newOpEnsureBucket(log *logp.Logger, cfg *Config) *opEnsureBucket {
 }
 
 func (o *opEnsureBucket) Execute(_ executor.Context) error {
-	o.log.Debugf("Verifying presence of Cloud Storage bucket: %s", o.config.FunctionStorage)
+	o.log.Debugf("Verifying presence of Cloud Storage bucket: '%s'", o.config.FunctionStorage)
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -40,7 +40,7 @@ func (o *opEnsureBucket) Execute(_ executor.Context) error {
 		if berr != nil {
 			return fmt.Errorf("cannot create bucket for function: %+v", berr)
 		}
-		o.created = false
+		o.created = true
 		o.log.Debugf("Cloud Storage bucket created with name '%s', attributes: %+v", o.config.FunctionStorage, attrs)
 		return nil
 	}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/aws"
 	"github.com/elastic/beats/x-pack/functionbeat/manager/core"
 )
 
@@ -103,7 +104,8 @@ func (c *cliHandler) Remove(names []string) error {
 // TODO(ph) check current path and option flag for cobra
 func (c *cliHandler) BuildPackage(outputPattern string) error {
 	for providerName := range c.clis {
-		content, err := core.MakeZip(providerName)
+		// TODO chose correct resources
+		content, err := core.MakeZip(aws.ZipResources())
 		if err != nil {
 			return err
 		}

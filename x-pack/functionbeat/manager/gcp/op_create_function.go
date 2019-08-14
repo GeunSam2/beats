@@ -5,15 +5,16 @@
 package gcp
 
 import (
-	"fmt"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/manager/executor"
+)
+
+const (
+	googleAPIsURL = "https://cloudfunctions.googleapis.com/v1/"
 )
 
 type opCreateFunction struct {
@@ -23,17 +24,17 @@ type opCreateFunction struct {
 }
 
 func newOpCreateFunction(log *logp.Logger, location string, requestBody common.MapStr) *opCreateFunction {
-	return &opCreateFunction{log: log, requestBody: requestBody}
+	return &opCreateFunction{log: log, location: location, requestBody: requestBody}
 }
 
 func (o *opCreateFunction) Execute(_ executor.Context) error {
-	apiKey := os.Getenv("GOOGLE_CLOUD_PLATFORM_API_KEY")
-	if apiKey == "" {
-		return fmt.Errorf("GOOGLE_CLOUD_PLATFORM_API_KEY environment variable is not set")
-	}
-	params := url.Values{}
-	params.Set("key", apiKey)
-	deployURL := googleAPIsURL + o.location + "/functions?" + params.Encode()
+	//apiKey := os.Getenv("GOOGLE_CLOUD_PLATFORM_API_KEY")
+	//if apiKey == "" {
+	//	return fmt.Errorf("GOOGLE_CLOUD_PLATFORM_API_KEY environment variable is not set")
+	//}
+	//params := url.Values{}
+	//params.Set("key", apiKey)
+	deployURL := googleAPIsURL + o.location + "/functions?" // + params.Encode()
 
 	o.log.Debugf("POSTing request at %s:\n%s", deployURL, o.requestBody.StringToPrint())
 

@@ -30,6 +30,8 @@ func newOpUploadToBucket(log *logp.Logger, config *Config, name string, raw []by
 	}
 }
 
+// Execute loads function to bucket.
+// If function needs to be overwritten, storage.objects.delete permission is required.
 func (o *opUploadToBucket) Execute(_ executor.Context) error {
 	o.log.Debugf("Uploading file '%s' to bucket '%s' with size %d bytes", o.name, o.config.FunctionStorage, len(o.raw))
 

@@ -13,11 +13,12 @@ import (
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
 	"github.com/elastic/beats/x-pack/functionbeat/manager/executor"
+	fngcp "github.com/elastic/beats/x-pack/functionbeat/provider/gcp/gcp"
 )
 
-const (
-	googleAPIsURL = "https://cloudfunctions.googleapis.com/v1/"
-)
+type installer interface {
+	Config() *fngcp.FunctionConfig
+}
 
 // CLIManager interacts with the AWS Lambda API to deploy, update or remove a function.
 // It will take care of creating the main lambda function and ask for each function type for the
@@ -26,8 +27,6 @@ type CLIManager struct {
 	templateBuilder *restAPITemplateBuilder
 	log             *logp.Logger
 	config          *Config
-
-	location string
 }
 
 // Deploy delegate deploy to the actual function implementation.
@@ -66,6 +65,7 @@ func (c *CLIManager) deploy(update bool, name string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(functionData.requestBody.StringToPrint())
 
 	executer := executor.NewExecutor(c.log)
 	executer.Add(newOpEnsureBucket(c.log, c.config))
@@ -74,7 +74,8 @@ func (c *CLIManager) deploy(update bool, name string) error {
 	if update {
 		// TODO
 	} else {
-		executer.Add(newOpCreateFunction(c.log, c.location, functionData.requestBody))
+		fmt.Println(c.config)
+		executer.Add(newOpCreateFunction(c.log, c.config.Location, functionData.requestBody))
 	}
 
 	// TODO wait
@@ -120,12 +121,9 @@ func NewCLI(
 		return nil, fmt.Errorf("not restAPITemplateBuilder")
 	}
 
-	location := "projects/" + config.ProjectID + "/locations" + config.Location
-
 	return &CLIManager{
 		config:          config,
 		log:             logp.NewLogger("gcp"),
 		templateBuilder: templateBuilder,
-		location:        location,
 	}, nil
 }

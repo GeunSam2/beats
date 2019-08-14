@@ -20,16 +20,25 @@ import (
 
 // PubSub represents a Google Cloud function which reads event from Google Pub/Sub triggers.
 type PubSub struct {
-	log *logp.Logger
+	log    *logp.Logger
+	config *FunctionConfig
 }
 
 type PubSubMsg string
 type PubSubContext string
 
 // NewPubSub returns a new function to read from Google Pub/Sub.
-func NewPubSub(provider provider.Provider, _ *common.Config) (provider.Function, error) {
+func NewPubSub(provider provider.Provider, cfg *common.Config) (provider.Function, error) {
+	config := defaultFunctionConfig()
+	err := cfg.Unpack(config)
+	if err != nil {
+		return &PubSub{}, err
+	}
+	config.entryPoint = "RunPubSub"
+
 	return &PubSub{
-		log: logp.NewLogger("pubsub"),
+		log:    logp.NewLogger("pubsub"),
+		config: config,
 	}, nil
 }
 
@@ -39,11 +48,7 @@ func (c *PubSub) Run(ctx context.Context, client core.Client) error {
 	if err != nil {
 		return err
 	}
-	c.log.Debugf("Message context: +%+v", msgCtx)
-	c.log.Debugf("Message: +%+v", msg)
-
 	event, err := transformer.PubSub(msgCtx, msg)
-	c.log.Debug(">>>> %+v", event)
 	if err := client.Publish(event); err != nil {
 		c.log.Errorf("error while publishing Pub/Sub event %+v", err)
 		return err
@@ -82,4 +87,9 @@ func PubSubDetails() *feature.Details {
 // Name returns the name of the function.
 func (p *PubSub) Name() string {
 	return "pubsub"
+}
+
+// Config returns the configuration to use when creating the lambda.
+func (p *PubSub) Config() *FunctionConfig {
+	return p.config
 }
