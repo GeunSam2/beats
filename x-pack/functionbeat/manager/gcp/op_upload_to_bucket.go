@@ -40,9 +40,9 @@ func (o *opUploadToBucket) Execute(_ executor.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not create storage client: %+v", err)
 	}
+
 	w := client.Bucket(o.config.FunctionStorage).Object(o.name).NewWriter(ctx)
 	w.ContentType = "text/plain"
-	w.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}} // TODO check permissions
 	_, err = w.Write(o.raw)
 	if err != nil {
 		return fmt.Errorf("error while writing function: %+v", err)
@@ -52,11 +52,20 @@ func (o *opUploadToBucket) Execute(_ executor.Context) error {
 		return fmt.Errorf("error while closing writer: %+v", err)
 	}
 
-	o.log.Debug("Upload successful", w.Attrs())
+	o.log.Debugf("Upload successful: %+v", w.Attrs())
+
 	return nil
 }
 
-// TODO
-func (o *opUploadToBucket) Rollback(ctx executor.Context) error {
-	return nil
+// Rollback removes the loaded archive.
+func (o *opUploadToBucket) Rollback(_ executor.Context) error {
+	o.log.Debugf("Removing file '%s' from bucket '%s'", o.name, o.config.FunctionStorage)
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("could not create storage client: %+v", err)
+	}
+
+	return client.Bucket(o.config.FunctionStorage).Object(o.name).Delete(ctx)
 }
