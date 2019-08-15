@@ -5,8 +5,6 @@
 package include
 
 import (
-	"fmt"
-
 	"github.com/elastic/beats/libbeat/feature"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
 	"github.com/elastic/beats/x-pack/functionbeat/provider/gcp/gcp"
@@ -23,6 +21,5 @@ var bundle = provider.MustCreate(
 ).Bundle()
 
 func init() {
-	fmt.Println("registered")
 	feature.MustRegisterBundle(bundle)
 }

@@ -42,7 +42,6 @@ type cliHandler struct {
 }
 
 func newCLIHandler(clis map[string]provider.CLIManager, functionsByProvider map[string]string, errOutput io.Writer, output io.Writer) *cliHandler {
-	fmt.Println(functionsByProvider)
 	return &cliHandler{
 		clis:                clis,
 		errOutput:           errOutput,
@@ -59,7 +58,6 @@ func (c *cliHandler) Deploy(names []string) error {
 	if len(names) == 0 {
 		return errNoFunctionGiven
 	}
-	fmt.Println(names)
 
 	errCount := c.iterateCLIFunc(names, "deploy", provider.CLIManager.Deploy)
 

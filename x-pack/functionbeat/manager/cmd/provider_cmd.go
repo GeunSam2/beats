@@ -39,7 +39,6 @@ func initProviders() ([]provider.Provider, error) {
 	}
 
 	var providers []provider.Provider
-	fmt.Println(cfg.Provider.GetFields())
 	for _, p := range cfg.Provider.GetFields() {
 		isAvailable, err := provider.IsAvailable(p)
 		if err != nil {
@@ -64,13 +63,11 @@ func initProviders() ([]provider.Provider, error) {
 }
 
 func handler() (*cliHandler, error) {
-	fmt.Println("handler")
 	providers, err := initProviders()
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("inited", providers)
 	clis := make(map[string]provider.CLIManager)
 	functionsByProvider := make(map[string]string)
 	for _, provider := range providers {
@@ -84,7 +81,6 @@ func handler() (*cliHandler, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("enabled functions", enabledFunctions)
 
 		for _, f := range enabledFunctions {
 			functionsByProvider[f] = provider.Name()

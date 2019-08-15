@@ -85,7 +85,6 @@ func IsAvailable(name string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println("IsAvailable", "AvailableProviders", availableProviders)
 
 	for _, p := range availableProviders {
 		if p == name {

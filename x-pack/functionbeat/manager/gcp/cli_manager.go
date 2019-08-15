@@ -74,7 +74,6 @@ func (c *CLIManager) deploy(update bool, name string) error {
 	if update {
 		// TODO
 	} else {
-		fmt.Println(c.config)
 		executer.Add(newOpCreateFunction(c.log, c.config.Location, functionData.requestBody))
 	}
 
