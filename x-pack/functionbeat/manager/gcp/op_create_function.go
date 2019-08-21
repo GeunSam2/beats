@@ -5,8 +5,12 @@
 package gcp
 
 import (
-	"net/http"
+	"context"
+	"fmt"
+	"io/ioutil"
 	"strings"
+
+	"golang.org/x/oauth2"
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
@@ -18,31 +22,40 @@ const (
 )
 
 type opCreateFunction struct {
-	log         *logp.Logger
-	location    string
+	log      *logp.Logger
+	location string
+	//token       string
+	tokenSrc    oauth2.TokenSource
 	requestBody common.MapStr
 }
 
-func newOpCreateFunction(log *logp.Logger, location string, requestBody common.MapStr) *opCreateFunction {
-	return &opCreateFunction{log: log, location: location, requestBody: requestBody}
+func newOpCreateFunction(log *logp.Logger, location string, tokenSrc oauth2.TokenSource, requestBody common.MapStr) *opCreateFunction {
+	return &opCreateFunction{log: log, location: location, tokenSrc: tokenSrc, requestBody: requestBody}
 }
 
 func (o *opCreateFunction) Execute(_ executor.Context) error {
-	//apiKey := os.Getenv("GOOGLE_CLOUD_PLATFORM_API_KEY")
-	//if apiKey == "" {
-	//	return fmt.Errorf("GOOGLE_CLOUD_PLATFORM_API_KEY environment variable is not set")
-	//}
-	//params := url.Values{}
-	//params.Set("key", apiKey)
-	deployURL := googleAPIsURL + o.location + "/functions?" // + params.Encode()
+	deployURL := googleAPIsURL + o.location + "/functions"
 
-	o.log.Debugf("POSTing request at %s:\n%s", deployURL, o.requestBody.StringToPrint())
+	o.log.Debugf("Posting request at %s:\n%s", deployURL, o.requestBody.StringToPrint())
 
-	resp, err := http.Post(deployURL, "application/json", strings.NewReader(o.requestBody.String()))
+	client := oauth2.NewClient(context.TODO(), o.tokenSrc)
 
-	o.log.Debugf("%+v", resp)
+	resp, err := client.Post(deployURL, "application/json", strings.NewReader(o.requestBody.String()))
+	if err != nil {
+		return err
+	}
 
-	return err
+	if resp.StatusCode >= 400 {
+		respTxt, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			o.log.Debugf("%s", string(respTxt))
+		}
+		return fmt.Errorf("error while creating function: %s", resp.Status)
+	}
+
+	o.log.Debugf("Function created successfully")
+
+	return nil
 }
 
 func (o *opCreateFunction) Rollback(_ executor.Context) error {

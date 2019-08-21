@@ -52,7 +52,7 @@ func (o *opUploadToBucket) Execute(_ executor.Context) error {
 		return fmt.Errorf("error while closing writer: %+v", err)
 	}
 
-	o.log.Debugf("Upload successful: %+v", w.Attrs())
+	o.log.Debugf("Upload to bucket was successful")
 
 	return nil
 }

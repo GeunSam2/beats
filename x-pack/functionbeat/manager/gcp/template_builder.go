@@ -19,9 +19,10 @@ import (
 )
 
 const (
-	runtime          = "go111"                                 // Golang 1.11
-	sourceArchiveURL = "gs://%s/%s"                            // path to the function archive
-	functionName     = "projects/%s/locations/%s/functions/%s" // full name of the functions
+	runtime          = "go111"                            // Golang 1.11
+	sourceArchiveURL = "gs://%s/%s"                       // path to the function archive
+	locationTemplate = "projects/%s/locations/%s"         // full name of the location
+	functionName     = locationTemplate + "/functions/%s" // full name of the functions
 )
 
 // NewTemplateBuilder returns the requested template builder
@@ -93,12 +94,12 @@ func findFunction(p provider.Provider, name string) (installer, error) {
 func (r *restAPITemplateBuilder) requestBody(name string, config *fngcp.FunctionConfig) common.MapStr {
 	fnName := fmt.Sprintf(functionName, r.gcpConfig.ProjectID, r.gcpConfig.Location, name)
 	body := common.MapStr{
-		"name":            fnName,
-		"description":     config.Description,
-		"entryPoint":      config.EntryPoint(),
-		"runtime":         runtime,
-		"sourceUploadUrl": fmt.Sprintf(sourceArchiveURL, r.gcpConfig.FunctionStorage, name),
-		"eventTrigger":    config.Trigger,
+		"name":             fnName,
+		"description":      config.Description,
+		"entryPoint":       config.EntryPoint(),
+		"runtime":          runtime,
+		"sourceArchiveUrl": fmt.Sprintf(sourceArchiveURL, r.gcpConfig.FunctionStorage, name),
+		"eventTrigger":     config.Trigger,
 		"environmentVariables": common.MapStr{
 			"ENABLED_FUNCTIONS": name,
 		},

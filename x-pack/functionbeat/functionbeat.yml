@@ -247,7 +247,7 @@ functionbeat.provider.aws.functions:
 # are present in the environment to correctly create the function when using the CLI.
 #
 # Configure which region your project is located in.
-functionbeat.provider.gcp.location_id: "europe-west-1"
+functionbeat.provider.gcp.location_id: "europe-west2"
 # Configure which Google Cloud project to deploy your functions.
 functionbeat.provider.gcp.project_id: "my-project-123456"
 # Configure the Google Cloud Storage we should upload the function artifact.
@@ -287,7 +287,7 @@ functionbeat.provider.gcp.functions:
 
     trigger:
       event_type: "providers/cloud.pubsub/eventTypes/topic.publish"
-      resource: "projects/_/pubsub/myPubSub"
+      resource: "projects/sacred-particle-242912/topics/my-function-topic"
       #service: "pubsub.googleapis.com"
 
     # Define custom processors for this function.

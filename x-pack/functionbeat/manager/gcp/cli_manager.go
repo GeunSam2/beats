@@ -64,9 +64,13 @@ func (c *CLIManager) Update(name string) error {
 
 // deploy uploads to bucket and creates a function on GCP.
 func (c *CLIManager) deploy(update bool, name string) error {
-	access, refresh, err := c.oauthToken()
-	fmt.Println(access, refresh, err)
-	return nil
+	//access, refresh, err := c.oauthToken()
+	//fmt.Println(access, refresh, err)
+	//return nil
+	tokenSrc, err := tokenSource()
+	if err != nil {
+		return err
+	}
 
 	functionData, err := c.templateBuilder.execute(name)
 	if err != nil {
@@ -81,7 +85,7 @@ func (c *CLIManager) deploy(update bool, name string) error {
 		// TODO
 	} else {
 		location := fmt.Sprintf(locationTemplate, c.config.ProjectID, c.config.Location)
-		executer.Add(newOpCreateFunction(c.log, location, "", functionData.requestBody))
+		executer.Add(newOpCreateFunction(c.log, location, tokenSrc, functionData.requestBody))
 	}
 
 	// TODO wait
@@ -96,28 +100,43 @@ func (c *CLIManager) deploy(update bool, name string) error {
 }
 
 func (c *CLIManager) oauthToken() (string, string, error) {
-	config := &oauth2.Config{
-		ClientID:     "97851287300-or6lkougl6f6l6s19d0ja3v1aom0l0s8.apps.googleusercontent.com",
-		ClientSecret: "Hr3Icu7q2aIkbOGhwl-tX9NE",
-		RedirectURL:  "localhost",
-		Scopes:       []string{"https://www.googleapis.com/auth/cloud-platform"},
-		Endpoint:     google.Endpoint,
-	}
+	//config := &oauth2.Config{
+	//	ClientID:     "97851287300-or6lkougl6f6l6s19d0ja3v1aom0l0s8.apps.googleusercontent.com",
+	//	ClientSecret: "Hr3Icu7q2aIkbOGhwl-tX9NE",
+	//	RedirectURL:  "http://kvch.me/fnbeat_state",
+	//	Scopes:       []string{"https://www.googleapis.com/auth/cloud-platform"},
+	//	Endpoint:     google.Endpoint,
+	//}
 
-	// Dummy authorization flow to read auth code from stdin.
-	authURL := config.AuthCodeURL("fnbeat")
-	fmt.Printf("Follow the link in your browser to obtain auth code: %s\n", authURL)
+	//// Dummy authorization flow to read auth code from stdin.
+	//authURL := config.AuthCodeURL("fnbeat_state")
 
-	// Read the authentication code from the command line
-	var code string
-	fmt.Printf("Enter token: ")
-	fmt.Scanln(&code)
+	//fmt.Printf("Follow the link in your browser to obtain auth code: %s\n", authURL)
 
-	token, err := config.Exchange(context.TODO(), code)
+	//// Read the authentication code from the command line
+	//var code string
+	//fmt.Printf("Enter token: ")
+	//fmt.Scanln(&code)
+
+	//token, err := config.Exchange(context.TODO(), code)
+	//if err != nil {
+	//	return "", "", err
+	//}
+	//return token.AccessToken, token.RefreshToken, nil
+	src, err := google.DefaultTokenSource(context.TODO(), "https://www.googleapis.com/auth/cloud-platform")
 	if err != nil {
 		return "", "", err
 	}
+	token, err := src.Token()
+	if err != nil {
+		return "", "", err
+	}
+
 	return token.AccessToken, token.RefreshToken, nil
+}
+
+func tokenSource() (oauth2.TokenSource, error) {
+	return google.DefaultTokenSource(context.TODO(), "https://www.googleapis.com/auth/cloud-platform")
 }
 
 // Remove removes a stack and unregister any resources created.

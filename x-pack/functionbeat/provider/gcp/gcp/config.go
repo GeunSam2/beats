@@ -20,15 +20,16 @@ type FunctionConfig struct {
 	VPCConnector        string                 `config:"vpc_connector"`
 	MaxInstances        int                    `config:"maximum_instances"`
 	Trigger             struct {
-		EventType string `config:"event_type" validate:"required"`
-		Resource  string `config:"resource" validate:"required"`
-		Service   string `config:"service"`
+		EventType string `config:"event_type" json:"eventType"`
+		Resource  string `config:"resource" json:"resource" validate:"required"`
+		Service   string `config:"service" json:"service,omitempty"`
 	} `config:"trigger" validate:"required"`
 
 	entryPoint string
 }
 
 // TODO
+// TODO separate by function
 func defaultFunctionConfig() *FunctionConfig {
 	return &FunctionConfig{}
 }
