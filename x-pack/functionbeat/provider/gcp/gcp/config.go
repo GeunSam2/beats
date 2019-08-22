@@ -5,6 +5,7 @@
 package gcp
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/elastic/beats/x-pack/functionbeat/config"
@@ -19,26 +20,45 @@ type FunctionConfig struct {
 	Labels              map[string]string      `config:"labels"`
 	VPCConnector        string                 `config:"vpc_connector"`
 	MaxInstances        int                    `config:"maximum_instances"`
-	Trigger             struct {
-		EventType string `config:"event_type" json:"eventType"`
-		Resource  string `config:"resource" json:"resource" validate:"required"`
-		Service   string `config:"service" json:"service,omitempty"`
-	} `config:"trigger" validate:"required"`
+	Trigger             Trigger                `config:"trigger" validate:"required"`
 
 	entryPoint string
 }
 
-// TODO
-// TODO separate by function
-func defaultFunctionConfig() *FunctionConfig {
-	return &FunctionConfig{}
+// Trigger stores the configuration of the function trigger.
+type Trigger struct {
+	EventType string `config:"event_type" json:"eventType"`
+	Resource  string `config:"resource" json:"resource" validate:"required"`
+	Service   string `config:"service" json:"service,omitempty"`
 }
 
-// TODO
+func defaultPubSubFunctionConfig() *FunctionConfig {
+	return &FunctionConfig{
+		Trigger: Trigger{
+			EventType: "google.pubsub.topic.publish",
+		},
+		entryPoint: "RunPubSub",
+	}
+}
+
+func defaultStorageFunctionConfig() *FunctionConfig {
+	return &FunctionConfig{
+		Trigger: Trigger{
+			EventType: "google.storage.object.finalize",
+		},
+		entryPoint: "RunCloudStorage",
+	}
+}
+
+// Validate checks a function configuration.
 func (c *FunctionConfig) Validate() error {
+	if c.entryPoint == "" {
+		return fmt.Errorf("entryPoint cannot be empty")
+	}
 	return nil
 }
 
+// EntryPoint returns the name of the function to run on GCP.
 func (c *FunctionConfig) EntryPoint() string {
 	return c.entryPoint
 }

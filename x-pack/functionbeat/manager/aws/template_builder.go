@@ -78,7 +78,9 @@ func (d *defaultTemplateBuilder) findFunction(name string) (installer, error) {
 // execute generates a template
 func (d *defaultTemplateBuilder) execute(name string) (templateData, error) {
 	d.log.Debug("Compressing all assets into an artifact")
-	content, err := core.MakeZip(ZipResources())
+
+	resources := ZipResources("")
+	content, err := core.MakeZip(resources)
 	if err != nil {
 		return templateData{}, err
 	}
@@ -312,7 +314,7 @@ func checksum(data []byte) string {
 }
 
 // ZipResources return the list of zip resources
-func ZipResources() []bundle.Resource {
+func ZipResources(_ string) []bundle.Resource {
 	return []bundle.Resource{
 		&bundle.LocalFile{Path: "pkg/functionbeat-aws", FileMode: 0755},
 	}

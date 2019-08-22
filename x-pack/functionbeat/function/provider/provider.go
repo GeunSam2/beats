@@ -94,8 +94,25 @@ func IsAvailable(name string) (bool, error) {
 	return false, nil
 }
 
+func Get(cfg *common.Config) (Provider, error) {
+	providers, err := list()
+	if err != nil {
+		return nil, err
+	}
+	if len(providers) != 1 {
+		return nil, fmt.Errorf("too many providers are available, expected one, got: %s", providers)
+	}
+
+	providerCfg, err := cfg.Child(providers[0], -1)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewProvider(providers[0], providerCfg)
+}
+
 // List returns the list of available providers.
-func List() ([]string, error) {
+func list() ([]string, error) {
 	registry := NewRegistry(feature.GlobalRegistry())
 	return registry.AvailableProviders()
 }

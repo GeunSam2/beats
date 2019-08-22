@@ -286,8 +286,8 @@ functionbeat.provider.gcp.functions:
     #maximum_instances: 0
 
     trigger:
-      event_type: "providers/cloud.pubsub/eventTypes/topic.publish"
       resource: "projects/sacred-particle-242912/topics/my-function-topic"
+      #event_type: "providers/cloud.pubsub/eventTypes/topic.publish"
       #service: "pubsub.googleapis.com"
 
     # Define custom processors for this function.
@@ -297,8 +297,8 @@ functionbeat.provider.gcp.functions:
 
   # Create a function that accepts events coming from Google Cloud Storage.
   - name: storage
-    enabled: false
-    type: cloudstorage
+    enabled: true
+    type: cloud_storage
 
     # Description of the method to help identify them when you run multiples functions.
     description: "Google Cloud Function for Cloud Storage"
@@ -313,6 +313,9 @@ functionbeat.provider.gcp.functions:
 
     # Email of the service account of the function. Defaults to {projectid}@appspot.gserviceaccount.com
     #service_account_email: {projectid}@appspot.gserviceaccount.com
+    trigger:
+      resource: "projects/sacred-particle-242912/buckets/zipzip"
+      #event_type: "providers/cloud.pubsub/eventTypes/topic.publish"
 
     # Labels of the function.
     #labels:

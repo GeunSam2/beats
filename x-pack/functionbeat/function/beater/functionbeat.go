@@ -53,7 +53,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		return nil, fmt.Errorf("error reading config file: %+v", err)
 	}
 
-	provider, err := GetProvider(c.Provider)
+	provider, err := provider.Get(c.Provider)
 	if err != nil {
 		return nil, err
 	}
@@ -67,23 +67,6 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		Config:   c,
 	}
 	return bt, nil
-}
-
-func GetProvider(cfg *common.Config) (provider.Provider, error) {
-	providers, err := provider.List()
-	if err != nil {
-		return nil, err
-	}
-	if len(providers) != 1 {
-		return nil, fmt.Errorf("too many providers are available, expected one, got: %s", providers)
-	}
-
-	providerCfg, err := cfg.Child(providers[0], -1)
-	if err != nil {
-		return nil, err
-	}
-
-	return provider.NewProvider(providers[0], providerCfg)
 }
 
 // Run starts functionbeat.

@@ -11,7 +11,6 @@ import (
 )
 
 // Bundle exposes the trigger supported by the gcp provider.
-// TODO add cloud storage
 var Bundle = provider.MustCreate(
 	"gcp",
 	provider.NewDefaultProvider("gcp", NewCLI, NewTemplateBuilder),
@@ -19,4 +18,7 @@ var Bundle = provider.MustCreate(
 ).MustAddFunction("pubsub",
 	gcp.NewPubSub,
 	gcp.PubSubDetails(),
+).MustAddFunction("cloud_storage",
+	gcp.NewStorage,
+	gcp.StorageDetails(),
 ).Bundle()

@@ -101,9 +101,14 @@ func (c *cliHandler) Remove(names []string) error {
 
 // TODO(ph) check current path and option flag for cobra
 func (c *cliHandler) BuildPackage(outputPattern string) error {
-	for providerName := range c.clis {
+	providers, err := provider.List()
+	if err != nil {
+		return err
+	}
+
+	for providerName := range providers {
 		// TODO chose correct resources
-		content, err := core.MakeZip(aws.ZipResources())
+		content, err := core.MakeZip(aws.ZipResources(""))
 		if err != nil {
 			return err
 		}

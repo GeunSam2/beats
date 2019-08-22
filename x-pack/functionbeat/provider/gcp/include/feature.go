@@ -18,6 +18,9 @@ var bundle = provider.MustCreate(
 ).MustAddFunction("pubsub",
 	gcp.NewPubSub,
 	gcp.PubSubDetails(),
+).MustAddFunction("cloud_storage",
+	gcp.NewStorage,
+	gcp.StorageDetails(),
 ).Bundle()
 
 func init() {

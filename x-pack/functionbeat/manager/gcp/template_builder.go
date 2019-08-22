@@ -25,16 +25,9 @@ const (
 	functionName     = locationTemplate + "/functions/%s" // full name of the functions
 )
 
-// NewTemplateBuilder returns the requested template builder
-func NewTemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.Provider) (provider.TemplateBuilder, error) {
-	// TODO fncfg
-	// TODO simacfg
-	return newRestAPITemplateBuilder(log, cfg, p)
-}
-
-// restAPITemplateBuilder builds request object when deploying Functionbeat using
+// defaultTemplateBuilder builds request object when deploying Functionbeat using
 // the command deploy.
-type restAPITemplateBuilder struct {
+type defaultTemplateBuilder struct {
 	provider  provider.Provider
 	log       *logp.Logger
 	gcpConfig *Config
@@ -45,35 +38,36 @@ type functionData struct {
 	requestBody common.MapStr
 }
 
-// newRestAPITemplateBuilder
-func newRestAPITemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.Provider) (provider.TemplateBuilder, error) {
+// NewTemplateBuilder returns the requested template builder
+func NewTemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.Provider) (provider.TemplateBuilder, error) {
 	gcpCfg := &Config{}
 	err := cfg.Unpack(gcpCfg)
 	if err != nil {
-		return &restAPITemplateBuilder{}, err
+		return &defaultTemplateBuilder{}, err
 	}
 
-	return &restAPITemplateBuilder{log: log, gcpConfig: gcpCfg, provider: p}, nil
+	return &defaultTemplateBuilder{log: log, gcpConfig: gcpCfg, provider: p}, nil
 }
 
-func (r *restAPITemplateBuilder) execute(name string) (*functionData, error) {
-	r.log.Debug("Compressing all assets into an artifact")
+func (d *defaultTemplateBuilder) execute(name string) (*functionData, error) {
+	d.log.Debug("Compressing all assets into an artifact")
 
-	raw, err := core.MakeZip(ZipResources())
+	fn, err := findFunction(d.provider, name)
 	if err != nil {
 		return nil, err
 	}
 
-	r.log.Debugf("Compression is successful (zip size: %d bytes)", len(raw))
-
-	fn, err := findFunction(r.provider, name)
+	resources := ZipResources(fn.Name())
+	raw, err := core.MakeZip(resources)
 	if err != nil {
 		return nil, err
 	}
+
+	d.log.Debugf("Compression is successful (zip size: %d bytes)", len(raw))
 
 	return &functionData{
 		raw:         raw,
-		requestBody: r.requestBody(name, fn.Config()),
+		requestBody: d.requestBody(name, fn.Config()),
 	}, nil
 }
 
@@ -91,14 +85,14 @@ func findFunction(p provider.Provider, name string) (installer, error) {
 	return function, nil
 }
 
-func (r *restAPITemplateBuilder) requestBody(name string, config *fngcp.FunctionConfig) common.MapStr {
-	fnName := fmt.Sprintf(functionName, r.gcpConfig.ProjectID, r.gcpConfig.Location, name)
+func (d *defaultTemplateBuilder) requestBody(name string, config *fngcp.FunctionConfig) common.MapStr {
+	fnName := fmt.Sprintf(functionName, d.gcpConfig.ProjectID, d.gcpConfig.Location, name)
 	body := common.MapStr{
 		"name":             fnName,
 		"description":      config.Description,
 		"entryPoint":       config.EntryPoint(),
 		"runtime":          runtime,
-		"sourceArchiveUrl": fmt.Sprintf(sourceArchiveURL, r.gcpConfig.FunctionStorage, name),
+		"sourceArchiveUrl": fmt.Sprintf(sourceArchiveURL, d.gcpConfig.FunctionStorage, name),
 		"eventTrigger":     config.Trigger,
 		"environmentVariables": common.MapStr{
 			"ENABLED_FUNCTIONS": name,
@@ -126,36 +120,20 @@ func (r *restAPITemplateBuilder) requestBody(name string, config *fngcp.Function
 }
 
 // RawTemplate returns the JSON to POST to the endpoint.
-func (r *restAPITemplateBuilder) RawTemplate(name string) (string, error) {
-	fn, err := findFunction(r.provider, name)
+func (d *defaultTemplateBuilder) RawTemplate(name string) (string, error) {
+	// TODO output in YAML
+	fn, err := findFunction(d.provider, name)
 	if err != nil {
 		return "", err
 	}
-	return r.requestBody(name, fn.Config()).StringToPrint(), nil
-}
-
-// deploymentManaegerTemplateBuilder builds a YAML configuration for users
-// to deploy the exported configuration using Google Deployment Manager.
-type deploymentManaegerTemplateBuilder struct {
-}
-
-// newDeploymentManagerTemplateBuilder
-func newDeploymentManagerTemplateBuilder(log *logp.Logger, cfg *common.Config, p provider.Provider) (provider.TemplateBuilder, error) {
-	return &deploymentManaegerTemplateBuilder{}, nil
-}
-
-// RawTemplate returns YAML representation of the function to be deployed.
-func (d *deploymentManaegerTemplateBuilder) RawTemplate(name string) (string, error) {
-	return "", nil
+	return d.requestBody(name, fn.Config()).StringToPrint(), nil
 }
 
 // ZipResources return the list of zip resources
-func ZipResources() []bundle.Resource {
-	// TODO
-	f := "pubsub"
+func ZipResources(typeName string) []bundle.Resource {
 	return []bundle.Resource{
-		&bundle.LocalFile{Path: filepath.Join("pkg", f, f+".go"), FileMode: 0755},
-		&bundle.LocalFile{Path: filepath.Join("pkg", f, "go.mod"), FileMode: 0655},
-		&bundle.LocalFile{Path: filepath.Join("pkg", f, "go.sum"), FileMode: 0655},
+		&bundle.LocalFile{Path: filepath.Join("pkg", typeName, typeName+".go"), FileMode: 0755},
+		&bundle.LocalFile{Path: filepath.Join("pkg", typeName, "go.mod"), FileMode: 0655},
+		&bundle.LocalFile{Path: filepath.Join("pkg", typeName, "go.sum"), FileMode: 0655},
 	}
 }

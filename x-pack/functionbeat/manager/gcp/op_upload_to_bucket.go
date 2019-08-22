@@ -58,14 +58,10 @@ func (o *opUploadToBucket) Execute(_ executor.Context) error {
 }
 
 // Rollback removes the loaded archive.
-func (o *opUploadToBucket) Rollback(_ executor.Context) error {
-	o.log.Debugf("Removing file '%s' from bucket '%s'", o.name, o.config.FunctionStorage)
-
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+func (o *opUploadToBucket) Rollback(ctx executor.Context) error {
+	err := newOpDeleteFromBucket(o.log, o.config, o.name).Execute(ctx)
 	if err != nil {
-		return fmt.Errorf("could not create storage client: %+v", err)
+		o.log.Debugf("Fail to delete file from bucket, error: %+v", err)
 	}
-
-	return client.Bucket(o.config.FunctionStorage).Object(o.name).Delete(ctx)
+	return nil
 }

@@ -29,12 +29,11 @@ type PubSubContext string
 
 // NewPubSub returns a new function to read from Google Pub/Sub.
 func NewPubSub(provider provider.Provider, cfg *common.Config) (provider.Function, error) {
-	config := defaultFunctionConfig()
+	config := defaultPubSubFunctionConfig()
 	err := cfg.Unpack(config)
 	if err != nil {
 		return &PubSub{}, err
 	}
-	config.entryPoint = "RunPubSub"
 
 	return &PubSub{
 		log:    logp.NewLogger("pubsub"),
@@ -43,14 +42,14 @@ func NewPubSub(provider provider.Provider, cfg *common.Config) (provider.Functio
 }
 
 // Run start
-func (c *PubSub) Run(ctx context.Context, client core.Client) error {
-	msgCtx, msg, err := c.getEventDataFromContext(ctx)
+func (p *PubSub) Run(ctx context.Context, client core.Client) error {
+	msgCtx, msg, err := p.getEventDataFromContext(ctx)
 	if err != nil {
 		return err
 	}
 	event, err := transformer.PubSub(msgCtx, msg)
 	if err := client.Publish(event); err != nil {
-		c.log.Errorf("error while publishing Pub/Sub event %+v", err)
+		p.log.Errorf("error while publishing Pub/Sub event %+v", err)
 		return err
 	}
 	client.Wait()
@@ -58,7 +57,7 @@ func (c *PubSub) Run(ctx context.Context, client core.Client) error {
 	return nil
 }
 
-func (c *PubSub) getEventDataFromContext(ctx context.Context) (context.Context, pubsub.Message, error) {
+func (p *PubSub) getEventDataFromContext(ctx context.Context) (context.Context, pubsub.Message, error) {
 	iMsgCtx := ctx.Value(PubSubContext("pub_sub_context"))
 	if iMsgCtx == nil {
 		return nil, pubsub.Message{}, fmt.Errorf("no pub/sub message context")
@@ -89,7 +88,7 @@ func (p *PubSub) Name() string {
 	return "pubsub"
 }
 
-// Config returns the configuration to use when creating the lambda.
+// Config returns the configuration to use when creating the function.
 func (p *PubSub) Config() *FunctionConfig {
 	return p.config
 }

@@ -22,17 +22,27 @@ const (
 )
 
 type opCreateFunction struct {
-	log      *logp.Logger
-	location string
-	//token       string
+	log         *logp.Logger
+	location    string
 	tokenSrc    oauth2.TokenSource
 	requestBody common.MapStr
 }
 
-func newOpCreateFunction(log *logp.Logger, location string, tokenSrc oauth2.TokenSource, requestBody common.MapStr) *opCreateFunction {
-	return &opCreateFunction{log: log, location: location, tokenSrc: tokenSrc, requestBody: requestBody}
+func newOpCreateFunction(
+	log *logp.Logger,
+	location string,
+	tokenSrc oauth2.TokenSource,
+	requestBody common.MapStr,
+) *opCreateFunction {
+	return &opCreateFunction{
+		log:         log,
+		location:    location,
+		tokenSrc:    tokenSrc,
+		requestBody: requestBody,
+	}
 }
 
+// Execute creates a function from the zip uploaded.
 func (o *opCreateFunction) Execute(_ executor.Context) error {
 	deployURL := googleAPIsURL + o.location + "/functions"
 
@@ -58,6 +68,7 @@ func (o *opCreateFunction) Execute(_ executor.Context) error {
 	return nil
 }
 
+// Rollback removed the deployed function.
 func (o *opCreateFunction) Rollback(_ executor.Context) error {
 	return nil
 }
