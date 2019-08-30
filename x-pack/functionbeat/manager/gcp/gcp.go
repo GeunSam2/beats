@@ -13,12 +13,12 @@ import (
 // Bundle exposes the trigger supported by the gcp provider.
 var Bundle = provider.MustCreate(
 	"gcp",
-	provider.NewDefaultProvider("gcp", NewCLI, NewTemplateBuilder),
+	provider.NewDefaultProvider("gcp", NewCLI, NewTemplateBuilder, ZipResources),
 	feature.NewDetails("Google Cloud Functions", "listen to events on Google Cloud", feature.Stable),
 ).MustAddFunction("pubsub",
 	gcp.NewPubSub,
 	gcp.PubSubDetails(),
-).MustAddFunction("cloud_storage",
+).MustAddFunction("storage",
 	gcp.NewStorage,
 	gcp.StorageDetails(),
 ).Bundle()

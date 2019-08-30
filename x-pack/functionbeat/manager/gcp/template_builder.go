@@ -57,7 +57,7 @@ func (d *defaultTemplateBuilder) execute(name string) (*functionData, error) {
 		return nil, err
 	}
 
-	resources := ZipResources(fn.Name())
+	resources := zipResources(fn.Name())
 	raw, err := core.MakeZip(resources)
 	if err != nil {
 		return nil, err
@@ -136,10 +136,9 @@ func ZipResources() []bundle.Resource {
 		return nil
 	}
 
-	resources := make([]bundle.Resource, len(functions))
+	resources := make([]bundle.Resource, 0)
 	for _, f := range functions {
-		r := zipResources(f)
-		resources = append(resources, r...)
+		resources = append(resources, zipResources(f)...)
 	}
 	return resources
 }

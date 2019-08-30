@@ -96,14 +96,14 @@ func IsAvailable(name string) (bool, error) {
 }
 
 func ListFunctions(provider string) ([]string, error) {
-	features, err := feature.GlobalRegistry().LookupAll(provider)
+	functions, err := feature.GlobalRegistry().LookupAll(getNamespace(provider))
 	if err != nil {
 		return nil, err
 	}
 
-	names := make([]string, len(features))
-	for _, f := range features {
-		names = append(names, f.Name())
+	names := make([]string, len(functions))
+	for i, f := range functions {
+		names[i] = f.Name()
 	}
 	return names, nil
 }

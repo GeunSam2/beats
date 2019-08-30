@@ -11,6 +11,7 @@ import (
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/config"
 	"github.com/elastic/beats/x-pack/functionbeat/function/core"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/core/bundle"
 )
 
 // DefaultProvider implements the minimal required to retrieve and start functions.
@@ -51,6 +52,7 @@ func NewDefaultProvider(
 			log:             log,
 			managerFactory:  manager,
 			templateFactory: templater,
+			zipResourcer:    resourcer,
 		}, nil
 	}
 }
@@ -113,4 +115,9 @@ func NewNullTemplateBuilder(_ *logp.Logger, _ *common.Config, _ Provider) (Templ
 // RawTemplate returns a empty string.
 func (*nullTemplateBuilder) RawTemplate(_ string) (string, error) {
 	return "", fmt.Errorf("raw temaplate not implemented")
+}
+
+// NullZipResources returns an empty list of resources.
+func NullZipResources() []bundle.Resource {
+	return nil
 }

@@ -120,6 +120,7 @@ func genRemoveCmd() *cobra.Command {
 }
 
 func genPackageCmd() *cobra.Command {
+	var outputPattern string
 	cmd := &cobra.Command{
 		Use:   "package",
 		Short: "Package the configuration and the executable in a zip",
@@ -136,14 +137,16 @@ func genPackageCmd() *cobra.Command {
 					return err
 				}
 
-				output := strings.ReplaceAll(outputPattern, "{{.Provider}}", provider.Name())
+				providerName := p.Name()
+				output := strings.ReplaceAll(outputPattern, "{{.Provider}}", providerName)
 				err = ioutil.WriteFile(output, content, 0644)
 				if err != nil {
 					return err
 				}
 
-				fmt.Fprintf(c.output, "Generated package for provider %s at: %s\n", providerName, output)
+				fmt.Fprintf(os.Stderr, "Generated package for provider %s at: %s\n", providerName, output)
 			}
+			return nil
 		}),
 	}
 
