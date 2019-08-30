@@ -129,8 +129,22 @@ func (d *defaultTemplateBuilder) RawTemplate(name string) (string, error) {
 	return d.requestBody(name, fn.Config()).StringToPrint(), nil
 }
 
-// ZipResources return the list of zip resources
-func ZipResources(typeName string) []bundle.Resource {
+// ZipResources returns the list of zip resources
+func ZipResources() []bundle.Resource {
+	functions, err := provider.ListFunctions("gcp")
+	if err != nil {
+		return nil
+	}
+
+	resources := make([]bundle.Resource, len(functions))
+	for _, f := range functions {
+		r := zipResources(f)
+		resources = append(resources, r...)
+	}
+	return resources
+}
+
+func zipResources(typeName string) []bundle.Resource {
 	return []bundle.Resource{
 		&bundle.LocalFile{Path: filepath.Join("pkg", typeName, typeName+".go"), FileMode: 0755},
 		&bundle.LocalFile{Path: filepath.Join("pkg", typeName, "go.mod"), FileMode: 0655},

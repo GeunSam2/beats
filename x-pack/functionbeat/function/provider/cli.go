@@ -24,7 +24,7 @@ type CLIManager interface {
 }
 
 // ZipResourcesFunc is a function which returns the list of resources for each function type for a provider.
-type ZipResourcesFunc func(string) []bundle.Resource
+type ZipResourcesFunc func() []bundle.Resource
 
 // CLIManagerFactory factory method to call to create a new CLI manager
 type CLIManagerFactory func(*logp.Logger, *common.Config, Provider) (CLIManager, error)

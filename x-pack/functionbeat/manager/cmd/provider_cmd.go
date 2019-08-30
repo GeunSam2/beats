@@ -6,8 +6,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/elastic/beats/libbeat/common/cli"
 	"github.com/elastic/beats/x-pack/functionbeat/config"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
+	"github.com/elastic/beats/x-pack/functionbeat/manager/core"
 )
 
 var output string
@@ -121,12 +124,26 @@ func genPackageCmd() *cobra.Command {
 		Use:   "package",
 		Short: "Package the configuration and the executable in a zip",
 		Run: cli.RunWith(func(cmd *cobra.Command, args []string) error {
-			h, err := handler()
+			providers, err := initProviders()
 			if err != nil {
 				return err
 			}
 
-			return h.BuildPackage(output)
+			for _, p := range providers {
+				zipResources := p.ZipResourcer()
+				content, err := core.MakeZip(zipResources())
+				if err != nil {
+					return err
+				}
+
+				output := strings.ReplaceAll(outputPattern, "{{.Provider}}", provider.Name())
+				err = ioutil.WriteFile(output, content, 0644)
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprintf(c.output, "Generated package for provider %s at: %s\n", providerName, output)
+			}
 		}),
 	}
 
@@ -136,7 +153,7 @@ func genPackageCmd() *cobra.Command {
 	}
 
 	defaultOutput := filepath.Join(dir, "package-{{.Provider}}.zip")
-	cmd.Flags().StringVarP(&output, "output", "o", defaultOutput, "full path pattern to the package")
+	cmd.Flags().StringVarP(&outputPattern, "output", "o", defaultOutput, "full path pattern to the package")
 	return cmd
 }
 

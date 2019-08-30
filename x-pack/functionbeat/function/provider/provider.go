@@ -33,6 +33,7 @@ type Provider interface {
 	EnabledFunctions() ([]string, error)
 	CLIManager() (CLIManager, error)
 	TemplateBuilder() (TemplateBuilder, error)
+	ZipResourcer() ZipResourcesFunc
 	Name() string
 }
 
@@ -94,8 +95,21 @@ func IsAvailable(name string) (bool, error) {
 	return false, nil
 }
 
+func ListFunctions(provider string) ([]string, error) {
+	features, err := feature.GlobalRegistry().LookupAll(provider)
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, len(features))
+	for _, f := range features {
+		names = append(names, f.Name())
+	}
+	return names, nil
+}
+
 func Get(cfg *common.Config) (Provider, error) {
-	providers, err := list()
+	providers, err := List()
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +126,7 @@ func Get(cfg *common.Config) (Provider, error) {
 }
 
 // List returns the list of available providers.
-func list() ([]string, error) {
+func List() ([]string, error) {
 	registry := NewRegistry(feature.GlobalRegistry())
 	return registry.AvailableProviders()
 }

@@ -22,6 +22,7 @@ type DefaultProvider struct {
 	log             *logp.Logger
 	managerFactory  CLIManagerFactory
 	templateFactory TemplateBuilderFactory
+	zipResourcer    ZipResourcesFunc
 }
 
 // NewDefaultProvider returns factory methods to handle generic provider.
@@ -29,6 +30,7 @@ func NewDefaultProvider(
 	name string,
 	manager CLIManagerFactory,
 	templater TemplateBuilderFactory,
+	resourcer ZipResourcesFunc,
 ) func(*logp.Logger, *Registry, *common.Config) (Provider, error) {
 	return func(log *logp.Logger, registry *Registry, cfg *common.Config) (Provider, error) {
 		c := &config.ProviderConfig{}
@@ -51,6 +53,10 @@ func NewDefaultProvider(
 			templateFactory: templater,
 		}, nil
 	}
+}
+
+func (d *DefaultProvider) ZipResourcer() ZipResourcesFunc {
+	return d.zipResourcer
 }
 
 // Name returns the name of the provider.
