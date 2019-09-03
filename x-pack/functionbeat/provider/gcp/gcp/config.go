@@ -28,8 +28,8 @@ type FunctionConfig struct {
 // Trigger stores the configuration of the function trigger.
 type Trigger struct {
 	EventType string `config:"event_type" json:"eventType"`
-	Resource  string `config:"resource" json:"resource" validate:"required"`
-	Service   string `config:"service" json:"service,omitempty"`
+	Resource  string `config:"resource"  validate:"required" json:"resource"`
+	Service   string `config:"service" json:"service,omitempty" yaml:"service,omitempty"`
 }
 
 func defaultPubSubFunctionConfig() *FunctionConfig {

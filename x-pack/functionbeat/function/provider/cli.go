@@ -21,6 +21,9 @@ type CLIManager interface {
 
 	// Remove takes a function name and remove the specific function from the remote provider.
 	Remove(string) error
+
+	// Export prints exported function template to stdout.
+	Export(string) error
 }
 
 // ZipResourcesFunc is a function which returns the list of resources for each function type for a provider.

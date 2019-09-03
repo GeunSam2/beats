@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/x-pack/functionbeat/function/provider"
@@ -96,6 +98,7 @@ func (d *defaultTemplateBuilder) requestBody(name string, config *fngcp.Function
 		"eventTrigger":     config.Trigger,
 		"environmentVariables": common.MapStr{
 			"ENABLED_FUNCTIONS": name,
+			"BEAT_STRICT_PERMS": "false",
 		},
 	}
 	if config.Timeout > 0*time.Second {
@@ -121,12 +124,57 @@ func (d *defaultTemplateBuilder) requestBody(name string, config *fngcp.Function
 
 // RawTemplate returns the JSON to POST to the endpoint.
 func (d *defaultTemplateBuilder) RawTemplate(name string) (string, error) {
-	// TODO output in YAML
 	fn, err := findFunction(d.provider, name)
 	if err != nil {
 		return "", err
 	}
-	return d.requestBody(name, fn.Config()).StringToPrint(), nil
+	config := fn.Config()
+
+	properties := common.MapStr{
+		"codeLocation":     "pkg/" + fn.Name(),
+		"codeBucket":       d.gcpConfig.FunctionStorage,
+		"codeBucketObject": "functionbeat.zip",
+		"location":         d.gcpConfig.Location,
+		"runtime":          runtime,
+		"entryPoint":       config.EntryPoint(),
+		"eventTrigger":     config.Trigger,
+		"environmentVariables": common.MapStr{
+			"ENABLED_FUNCTIONS": name,
+			"BEAT_STRICT_PERMS": false,
+		},
+	}
+
+	if config.Timeout > 0*time.Second {
+		properties["timeout"] = config.Timeout.String()
+	}
+	if config.MemorySize > 0 {
+		properties["availableMemoryMb"] = config.MemorySize
+	}
+	if len(config.ServiceAccountEmail) > 0 {
+		properties["serviceAccountEmail"] = config.ServiceAccountEmail
+	}
+	if len(config.Labels) > 0 {
+		properties["labels"] = config.Labels
+	}
+	if config.MaxInstances > 0 {
+		properties["maxInstances"] = config.MaxInstances
+	}
+	if len(config.VPCConnector) > 0 {
+		properties["vpcConnector"] = config.VPCConnector
+	}
+
+	output := common.MapStr{
+		"resources": []common.MapStr{
+			common.MapStr{
+				"name":       fmt.Sprintf(functionName, d.gcpConfig.ProjectID, d.gcpConfig.Location, name),
+				"type":       "cloudfunctions.v1beta2.function", // TODO
+				"properties": properties,
+			},
+		},
+	}
+
+	yamlBytes, err := yaml.Marshal(output)
+	return string(yamlBytes), err
 }
 
 // ZipResources returns the list of zip resources

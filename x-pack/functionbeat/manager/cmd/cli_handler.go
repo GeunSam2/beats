@@ -56,7 +56,7 @@ func (c *cliHandler) Deploy(names []string) error {
 		return errNoFunctionGiven
 	}
 
-	errCount := c.iterateCLIFunc(names, "deploy", provider.CLIManager.Deploy)
+	errCount := c.iterateCLIFuncVerbose(names, "deploy", provider.CLIManager.Deploy)
 
 	if errCount > 0 {
 		return fmt.Errorf("Fail to deploy %d function(s)", errCount)
@@ -72,7 +72,7 @@ func (c *cliHandler) Update(names []string) error {
 		return errNoFunctionGiven
 	}
 
-	errCount := c.iterateCLIFunc(names, "update", provider.CLIManager.Update)
+	errCount := c.iterateCLIFuncVerbose(names, "update", provider.CLIManager.Update)
 
 	if errCount > 0 {
 		return fmt.Errorf("fail to update %d function(s)", errCount)
@@ -88,7 +88,7 @@ func (c *cliHandler) Remove(names []string) error {
 		return errNoFunctionGiven
 	}
 
-	errCount := c.iterateCLIFunc(names, "remove", provider.CLIManager.Remove)
+	errCount := c.iterateCLIFuncVerbose(names, "remove", provider.CLIManager.Remove)
 
 	if errCount > 0 {
 		return fmt.Errorf("fail to remove %d function(s)", errCount)
@@ -96,7 +96,31 @@ func (c *cliHandler) Remove(names []string) error {
 	return nil
 }
 
-func (c *cliHandler) iterateCLIFunc(names []string, operation string, f func(provider.CLIManager, string) error) int {
+func (c *cliHandler) Export(names []string) error {
+	c.log.Debugf("Starting export for: %s", strings.Join(names, ", "))
+	defer c.log.Debug("Export execution ended")
+
+	if len(names) == 0 {
+		return errNoFunctionGiven
+	}
+
+	errCount := c.iterateCLIFuncQuiet(names, "export", provider.CLIManager.Export)
+
+	if errCount > 0 {
+		return fmt.Errorf("fail to export %d function(s)", errCount)
+	}
+	return nil
+}
+
+func (c *cliHandler) iterateCLIFuncVerbose(names []string, operation string, f func(provider.CLIManager, string) error) int {
+	return c.iterateCLIFunc(names, operation, f, true)
+}
+
+func (c *cliHandler) iterateCLIFuncQuiet(names []string, operation string, f func(provider.CLIManager, string) error) int {
+	return c.iterateCLIFunc(names, operation, f, false)
+}
+
+func (c *cliHandler) iterateCLIFunc(names []string, operation string, f func(provider.CLIManager, string) error, verbose bool) int {
 	errCount := 0
 	for _, name := range names {
 		providerName, ok := c.functionsByProvider[name]
@@ -120,7 +144,9 @@ func (c *cliHandler) iterateCLIFunc(names []string, operation string, f func(pro
 			continue
 		}
 
-		fmt.Fprintf(c.output, "Function: %s, %s successful\n", name, operation)
+		if verbose {
+			fmt.Fprintf(c.output, "Function: %s, %s successful\n", name, operation)
+		}
 	}
 	return errCount
 }
