@@ -131,20 +131,21 @@ func genPackageCmd() *cobra.Command {
 			}
 
 			for _, p := range providers {
-				zipResources := p.ZipResourcer()
-				content, err := core.MakeZip(zipResources())
-				if err != nil {
-					return err
-				}
+				resourcer := p.ZipResourcer()
+				for providerSuffix, resources := range resourcer() {
+					content, err := core.MakeZip(resources)
+					if err != nil {
+						return err
+					}
 
-				providerName := p.Name()
-				output := strings.ReplaceAll(outputPattern, "{{.Provider}}", providerName)
-				err = ioutil.WriteFile(output, content, 0644)
-				if err != nil {
-					return err
-				}
+					output := strings.ReplaceAll(outputPattern, "{{.Provider}}", providerSuffix)
+					err = ioutil.WriteFile(output, content, 0644)
+					if err != nil {
+						return err
+					}
 
-				fmt.Fprintf(os.Stderr, "Generated package for provider %s at: %s\n", providerName, output)
+					fmt.Fprintf(os.Stderr, "Generated package for provider %s at: %s\n", providerSuffix, output)
+				}
 			}
 			return nil
 		}),

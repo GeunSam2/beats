@@ -118,6 +118,6 @@ func (*nullTemplateBuilder) RawTemplate(_ string) (string, error) {
 }
 
 // NullZipResources returns an empty list of resources.
-func NullZipResources() []bundle.Resource {
+func NullZipResources() map[string][]bundle.Resource {
 	return nil
 }

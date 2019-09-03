@@ -130,15 +130,16 @@ func (d *defaultTemplateBuilder) RawTemplate(name string) (string, error) {
 }
 
 // ZipResources returns the list of zip resources
-func ZipResources() []bundle.Resource {
+func ZipResources() map[string][]bundle.Resource {
 	functions, err := provider.ListFunctions("gcp")
 	if err != nil {
+		fmt.Println(err)
 		return nil
 	}
 
-	resources := make([]bundle.Resource, 0)
+	resources := make(map[string][]bundle.Resource)
 	for _, f := range functions {
-		resources = append(resources, zipResources(f)...)
+		resources["gcp-"+f] = zipResources(f)
 	}
 	return resources
 }
