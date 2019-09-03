@@ -125,7 +125,7 @@ func (c *cliHandler) iterateCLIFunc(names []string, operation string, f func(pro
 	for _, name := range names {
 		providerName, ok := c.functionsByProvider[name]
 		if !ok {
-			fmt.Fprintf(c.errOutput, "Function: %s, could not be %s. Enable it.\n", name, operation)
+			fmt.Fprintf(c.errOutput, "Function: %s, could not be %sed. Enable it.\n", name, operation)
 			errCount++
 			continue
 		}
